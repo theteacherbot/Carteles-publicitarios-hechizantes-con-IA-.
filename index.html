@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carteles publicitarios con IA · Publicable v6</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #081120;
+      --panel: #0d1a2e;
+      --panel-soft: #0a1628;
+      --cyan: #00D9FF;
+      --cyan-soft: rgba(0, 217, 255, 0.11);
+      --gold: #FFD700;
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.68);
+      --line: rgba(0, 217, 255, 0.18);
+      --danger: #ff6b6b;
+      --ok: #00ff88;
+      --warn: #ffca5c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at top right, rgba(0, 217, 255, 0.11), transparent 34rem),
+        radial-gradient(circle at bottom left, rgba(255, 215, 0, 0.08), transparent 28rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font-family: inherit;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s, background 0.18s;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .controls {
+      width: 460px;
+      min-width: 460px;
+      max-height: 100vh;
+      overflow-y: auto;
+      padding: 1.35rem;
+      background: rgba(13, 26, 46, 0.96);
+      border-right: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+
+    .stage {
+      position: relative;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 2rem;
+    }
+
+    .brand {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+    }
+
+    h1 {
+      color: var(--cyan);
+      font-family: Montserrat, Inter, sans-serif;
+      font-size: 1.28rem;
+      line-height: 1.24;
+    }
+
+    .subtitle {
+      margin-top: 0.34rem;
+      color: var(--gold);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .card {
+      margin-bottom: 1rem;
+      padding: 0.92rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0, 217, 255, 0.052);
+    }
+
+    .group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.42rem;
+      color: var(--cyan);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.72rem 0.82rem;
+      border: 2px solid rgba(0, 217, 255, 0.2);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.9rem;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--cyan);
+      outline: 0;
+      box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+    }
+
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+      background: var(--panel-soft);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
+    .hint {
+      margin-top: 0.38rem;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+
+    .status {
+      margin-top: 0.45rem;
+      color: var(--muted);
+      font-size: 0.77rem;
+      line-height: 1.4;
+    }
+
+    .status.ok { color: var(--ok); }
+    .status.warn { color: var(--warn); }
+    .status.bad { color: var(--danger); }
+
+    .row,
+    .key-row {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .key-row input {
+      flex: 1;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: 0.03em;
+    }
+
+    .btn-small {
+      padding: 0.66rem 0.78rem;
+      border: 1px solid rgba(0, 217, 255, 0.32);
+      background: var(--cyan-soft);
+      color: var(--cyan);
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      width: 100%;
+      margin: 0.25rem 0 0.65rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, #00D9FF, #0088cc);
+      color: #06101d;
+      font-size: 1rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .btn-gold {
+      display: none;
+      width: 100%;
+      padding: 0.86rem;
+      background: var(--gold);
+      color: #06101d;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .btn-gold.active {
+      display: block;
+    }
+
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.68rem;
+    }
+
+    .key-buttons {
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .key-buttons {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .counter {
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .counter.warn { color: var(--warn); }
+    .counter.bad { color: var(--danger); }
+
+    .canvas {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: min(78vh, 780px);
+      max-width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      border: 2px solid rgba(0, 217, 255, 0.22);
+      border-radius: 18px;
+      background: rgba(13, 26, 46, 0.9);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+    }
+
+    .placeholder {
+      padding: 2rem;
+      color: rgba(0, 217, 255, 0.5);
+      text-align: center;
+    }
+
+    .placeholder svg {
+      width: 74px;
+      height: 74px;
+      margin-bottom: 1rem;
+      opacity: 0.56;
+    }
+
+    .placeholder p {
+      font-weight: 800;
+    }
+
+    .generated {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .generated.active {
+      display: block;
+    }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 17, 32, 0.92);
+    }
+
+    .loading.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 1rem;
+      border: 4px solid rgba(0, 217, 255, 0.2);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.55rem 0.9rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(0, 217, 255, 0.1);
+      color: var(--cyan);
+      font-size: 0.76rem;
+      font-weight: 800;
+    }
+
+    .message {
+      display: none;
+      margin-top: 0.75rem;
+      padding: 0.85rem;
+      border-radius: 11px;
+      border: 1px solid rgba(255, 0, 0, 0.34);
+      background: rgba(255, 0, 0, 0.085);
+      color: var(--danger);
+      font-size: 0.84rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .message.active {
+      display: block;
+    }
+
+    .credits {
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .credits a {
+      color: var(--cyan);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        flex-direction: column;
+      }
+
+      .controls {
+        width: 100%;
+        min-width: 0;
+        max-height: none;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .stage {
+        padding: 1rem;
+      }
+
+      .badge {
+        position: static;
+        align-self: center;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .two-cols,
+      .key-buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="controls">
+      <header class="brand">
+        <h1>Carteles publicitarios hechIzAntes</h1>
+        <div class="subtitle">Herramienta creadora de carteles publicitarios con IA</div>
+      </header>
+
+      <section class="card" aria-labelledby="api-title">
+        <label id="api-title">API Key de Pollinations</label>
+        <div class="key-row">
+          <input type="password" id="apiKey" placeholder="Introduce tu API key pk_ o sk_" autocomplete="off" />
+          <button class="btn-small" id="showKeyBtn" type="button">👁️ Ver</button>
+        </div>
+        <div id="keyStatus" class="status">No configurada.</div>
+        <div class="key-buttons" style="margin-top:0.65rem">
+          <button class="btn-small" id="saveKeyBtn" type="button">Guardar key</button>
+          <button class="btn-small" id="clearKeyBtn" type="button">Borrar key</button>
+        </div>
+        <button class="btn-small" id="getKeyBtn" type="button" style="width:100%;margin-top:0.5rem;background:var(--cyan);color:#06101d;">🔑 Obtener API key automáticamente</button>
+        <div class="status warn">En equipos compartidos, pulsa “Borrar key” al terminar.</div>
+      </section>
+
+      <section class="card" aria-labelledby="form-title" style="background: rgba(0, 217, 255, 0.02); border-color: rgba(0, 217, 255, 0.12);">
+        <h2 id="form-title" style="color: var(--cyan); font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;">Estructura del Cartel</h2>
+        
+        <div class="group">
+          <label for="brandName">1. Nombre de la marca o empresa</label>
+          <input id="brandName" value="Café de la Montaña" placeholder="Ej: Café de la Montaña, TechCorp..." />
+        </div>
+
+        <div class="group">
+          <label for="slogan">2. Eslogan (opcional)</label>
+          <input id="slogan" value="Tradición que inspira" placeholder="Ej: Tradición que inspira" />
+        </div>
+
+        <div class="group">
+          <label for="objective">3. Objetivo del cartel</label>
+          <select id="objective">
+            <option value="Promocionar" selected>Promocionar</option>
+            <option value="Vender">Vender</option>
+            <option value="Informar">Informar</option>
+            <option value="Invitar a un evento">Invitar a un evento</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <label for="product">4. Producto o servicio principal</label>
+          <input id="product" value="Café artesanal" placeholder="Ej: Café artesanal, Perfume, Curso de inglés..." />
+        </div>
+
+        <div class="group">
+          <label for="message">5. Mensaje principal</label>
+          <input id="message" value="¡Ven hoy y prueba nuestra nueva bebida!" placeholder="Ej: ¡Ven hoy y prueba nuestra nueva bebida!" />
+        </div>
+
+        <div class="group">
+          <label for="contact">6. Contacto</label>
+          <input id="contact" value="WhatsApp: +57 300 123 4567 · @cafedelamontana · cafedelamontana.com" placeholder="Ej: WhatsApp +57..., @instagram, sitio web" />
+        </div>
+
+        <div class="group">
+          <label for="environment">7. Escenario o ambiente</label>
+          <input id="environment" value="Una acogedora cafetería rústica de montaña con luces cálidas al atardecer" placeholder="Ej: Cafetería acogedora, Aeropuerto futurista..." />
+        </div>
+      </section>
+
+      <div class="two-cols">
+        <div class="group">
+          <label for="style">Estilo</label>
+          <select id="style">
+            <option value="photorealistic">Photorealistic</option>
+            <option value="cinematic" selected>Cinematic</option>
+            <option value="hyperrealistic">Hyperrealistic</option>
+            <option value="ultra_detailed">Ultra Detailed</option>
+            <option value="fantasy_art">Fantasy Art</option>
+            <option value="epic_fantasy">Epic Fantasy</option>
+            <option value="dark_fantasy">Dark Fantasy</option>
+            <option value="concept_art">Concept Art</option>
+            <option value="digital_painting">Digital Painting</option>
+            <option value="matte_painting">Matte Painting</option>
+            <option value="oil_painting">Oil Painting</option>
+            <option value="watercolor">Watercolor</option>
+            <option value="acrylic_painting">Acrylic Painting</option>
+            <option value="charcoal_sketch">Charcoal Sketch</option>
+            <option value="pencil_drawing">Pencil Drawing</option>
+            <option value="ink_illustration">Ink Illustration</option>
+            <option value="comic_book">Comic Book</option>
+            <option value="graphic_novel">Graphic Novel</option>
+            <option value="anime">Anime</option>
+            <option value="manga">Manga</option>
+            <option value="ghibli">Studio Ghibli</option>
+            <option value="pixar">Pixar Style</option>
+            <option value="disney">Disney Style</option>
+            <option value="cartoon">Cartoon</option>
+            <option value="3d_render">3D Render</option>
+            <option value="isometric">Isometric</option>
+            <option value="low_poly">Low Poly</option>
+            <option value="voxel_art">Voxel Art</option>
+            <option value="cyberpunk">Cyberpunk</option>
+            <option value="steampunk">Steampunk</option>
+            <option value="sci_fi">Sci-Fi</option>
+            <option value="futuristic">Futuristic</option>
+            <option value="retrofuturism">Retrofuturism</option>
+            <option value="vaporwave">Vaporwave</option>
+            <option value="synthwave">Synthwave</option>
+            <option value="minimalist">Minimalist</option>
+            <option value="luxury_editorial">Luxury Editorial</option>
+            <option value="apple_minimal">Apple Minimal</option>
+            <option value="modern">Modern</option>
+            <option value="contemporary">Contemporary</option>
+            <option value="art_deco">Art Deco</option>
+            <option value="baroque">Baroque</option>
+            <option value="victorian">Victorian</option>
+            <option value="gothic">Gothic</option>
+            <option value="renaissance">Renaissance</option>
+            <option value="surrealism">Surrealism</option>
+            <option value="abstract">Abstract</option>
+            <option value="pop_art">Pop Art</option>
+            <option value="neon_art">Neon Art</option>
+            <option value="street_art">Street Art</option>
+            <option value="graffiti">Graffiti</option>
+            <option value="poster_design">Poster Design</option>
+            <option value="advertising">Advertising Campaign</option>
+            <option value="travel_poster">Travel Poster</option>
+            <option value="vintage_poster">Vintage Poster</option>
+            <option value="retro">Retro</option>
+            <option value="vintage">Vintage</option>
+            <option value="tropical_luxury">Tropical Luxury</option>
+            <option value="bohemian">Bohemian</option>
+            <option value="rustic">Rustic</option>
+            <option value="nature_inspired">Nature Inspired</option>
+            <option value="magical_realism">Magical Realism</option>
+          </select>
+        </div>
+        <div class="group">
+          <label for="model">Modelo</label>
+          <select id="model">
+            <option value="zimage" selected>ZImage · recomendado</option>
+            <option value="flux">Flux</option>
+            <option value="gptimage">GPTImage</option>
+            <option value="gptimage-large">GPTImage-Large</option>
+            <option value="gpt-image-2">GPT-Image-2</option>
+            <option value="kontext">Kontext · edición</option>
+            <option value="seedream">Seedream · edición</option>
+            <option value="nanobanana">Nanobanana · edición</option>
+            <option value="klein">Klein · edición</option>
+            <option value="qwen-image">Qwen-Image</option>
+            <option value="wan-image">Wan-Image</option>
+            <option value="grok-imagine">Grok-Imagine</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="two-cols">
+        <div class="group">
+          <label for="size">Tamaño</label>
+          <select id="size">
+            <optgroup label="Cuadrados">
+              <option value="1024x1024" selected>1024 × 1024 · Cuadrado recomendado</option>
+              <option value="1080x1080">1080 × 1080 · Instagram cuadrado</option>
+              <option value="768x768">768 × 768 · Cuadrado ligero</option>
+              <option value="512x512">512 × 512 · Prueba rápida</option>
+            </optgroup>
+            <optgroup label="Verticales">
+              <option value="1080x1350">1080 × 1350 · Instagram vertical 4:5</option>
+              <option value="1024x1536">1024 × 1536 · Cartel vertical 2:3</option>
+              <option value="1080x1920">1080 × 1920 · Historia / Reel / TikTok</option>
+              <option value="768x1024">768 × 1024 · Vertical ligero 3:4</option>
+            </optgroup>
+            <optgroup label="Horizontales">
+              <option value="1920x1080">1920 × 1080 · Pantalla 16:9</option>
+              <option value="1600x900">1600 × 900 · Banner 16:9</option>
+              <option value="1200x628">1200 × 628 · Anuncio web</option>
+              <option value="1024x768">1024 × 768 · Horizontal 4:3</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="group">
+          <label for="quality">Calidad</label>
+          <select id="quality">
+            <option value="low">Baja · rápida</option>
+            <option value="medium" selected>Media · recomendada</option>
+            <option value="high">Alta · más detalle</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="two-cols">
+        <div class="group">
+          <label for="colorPalette">Paleta de colores (opcional)</label>
+          <input id="colorPalette" placeholder="Ej: cyan profundo, azul noche, dorado" />
+        </div>
+        <div class="group">
+          <label for="artistRefs">Referencias de artista (opcional)</label>
+          <input id="artistRefs" placeholder="Ej: fotografía editorial de viajes" />
+        </div>
+      </div>
+
+      <div class="group">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.42rem;">
+          <label for="prompt" style="margin-bottom: 0;">Prompt <span id="counter" class="counter">0 caracteres</span></label>
+          <button class="btn-small" id="buildPromptBtn" type="button" style="background: var(--cyan); color: #06101d; border-color: var(--cyan); font-weight: 800; font-size: 0.72rem; padding: 0.35rem 0.65rem;">⚡ Generar Prompt</button>
+        </div>
+        <textarea id="prompt" placeholder="Escribe tu prompt o haz clic en 'Generar Prompt' arriba para crearlo a partir del formulario..."></textarea>
+        <div id="promptHelp" class="hint">Prompt dentro de un rango estable para generación.</div>
+      </div>
+
+      <button class="btn-primary" id="generateBtn" type="button">✨ Generar imagen</button>
+      <button class="btn-gold" id="downloadBtn" type="button">⬇️ Descargar imagen</button>
+      <div id="errorBox" class="message"></div>
+    </aside>
+
+    <main class="stage">
+      <div class="badge" id="stateBadge">Listo</div>
+      <div class="canvas" aria-live="polite">
+        <div class="loading" id="loading">
+          <div class="spinner" aria-hidden="true"></div>
+          <div style="color:var(--cyan);font-weight:800">Generando imagen...</div>
+          <div class="hint">El proceso puede tardar unos segundos.</div>
+        </div>
+        <div class="placeholder" id="placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+          <p>Tu imagen aparecerá aquí</p>
+          <div class="hint">Relación de aspecto 1:1</div>
+        </div>
+        <img id="generatedImage" class="generated" alt="Imagen generada" />
+      </div>
+      <div class="credits">
+        Herramienta diseñada por el profesor <strong>Edgar Herrera</strong> con tecnología <a href="https://pollinations.ai/" target="_blank" rel="noopener">Pollinations</a> y apoyo de herramientas de IA.
+      </div>
+    </main>
+  </div>
+
+  <script>
+    'use strict';
+
+    const API_BASE = 'https://gen.pollinations.ai';
+    const AUTH_BASE = 'https://enter.pollinations.ai';
+    const STORAGE_KEY = 'POLLINATIONS_API_KEY';
+    // Si registras esta app en enter.pollinations.ai obtendrás un pk_... para
+    // usar aquí como client_id (pantalla de consentimiento con tu nombre).
+    // Sin client_id, el flujo de autorización sigue funcionando igual.
+    const BYOP_CLIENT_ID = '';
+    const MAX_STABLE_PROMPT_LENGTH = 2400;
+
+    let currentImageUrl = '';
+
+    const $ = (id) => document.getElementById(id);
+
+    const NEGATIVE_PROMPT_DEFAULT = 'blurry, cartoon, nsfw, low quality, distorted text, watermark, extra limbs, disfigured faces';
+
+    function parseListInput(id) {
+      const raw = $(id) ? $(id).value.trim() : '';
+      if (!raw) return [];
+      return raw.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+
+    function buildPromptFromForm() {
+      const brand = $('brandName').value.trim();
+      const slogan = $('slogan').value.trim();
+      const objective = $('objective').value;
+      const product = $('product').value.trim();
+      const message = $('message').value.trim();
+      const contact = $('contact').value.trim();
+      const environment = $('environment').value.trim();
+      const styleOption = $('style').selectedOptions[0];
+      const style = styleOption ? styleOption.textContent.trim() : $('style').value;
+
+      if (!brand) {
+        showError('Por favor, indica al menos el nombre de la marca o empresa para estructurar el prompt.');
+        $('brandName').focus();
+        return;
+      }
+
+      let objAction = 'promocionar';
+      if (objective === 'Vender') objAction = 'impulsar las ventas minoristas de';
+      if (objective === 'Informar') objAction = 'educar e informar al público sobre';
+      if (objective === 'Invitar a un evento') objAction = 'invitar al público a un evento especial de';
+
+      let prompt = `Cartel de campaña publicitaria comercial, estilo profesional ${style}. `;
+      prompt += `El objetivo visual es ${objAction} un "${product || 'producto'}" de excelente calidad de la marca "${brand}". `;
+      
+      if (slogan) {
+        prompt += `La escena integra la esencia conceptual de su eslogan: "${slogan}". `;
+      }
+      
+      if (environment) {
+        prompt += `El escenario es una escena hermosamente representada y ubicada en: ${environment}. `;
+      } else {
+        prompt += `Ubicado en un espacio de trabajo corporativo o creativo muy pulido con profundidad atmosférica cinematográfica. `;
+      }
+
+      if (message) {
+        prompt += `El enfoque visual central está diseñado para comunicar esta idea principal: "${message}". `;
+      }
+
+      if (contact) {
+        prompt += `Debe reservarse una zona limpia para incluir claramente este contacto en postproducción: "${contact}". `;
+      }
+
+      prompt += `Gradación de color comercial de alta gama, composición simétrica, iluminación realista e identidad corporativa premium. `;
+      prompt += `El diseño incluye un amplio espacio negativo en la parte superior e inferior para luego superponer texto limpiamente; no muestres letras distorsionadas aleatorias, marcas de agua o elementos gráficos ilegibles en el cartel.`;
+
+      const colorPalette = parseListInput('colorPalette');
+      const artistaReferences = parseListInput('artistRefs');
+
+      const promptObject = {
+        prompt: prompt,
+        negative_prompt: NEGATIVE_PROMPT_DEFAULT,
+        style: style,
+        lighting: 'iluminación publicitaria de alta gama, realista',
+        mood: slogan ? `alineado con el eslogan "${slogan}"` : 'profesional, persuasivo',
+        contact: contact,
+        color_palette: colorPalette.length ? colorPalette : [],
+        artista_references: artistaReferences.length ? artistaReferences : []
+      };
+
+      $('prompt').value = JSON.stringify(promptObject, null, 2);
+
+      updatePromptCounter();
+      clearError();
+    }
+
+    function getApiKey() {
+      return localStorage.getItem(STORAGE_KEY) || '';
+    }
+
+    function setApiKey(key) {
+      if (key) localStorage.setItem(STORAGE_KEY, key);
+      else localStorage.removeItem(STORAGE_KEY);
+    }
+
+    function buildHeaders(json) {
+      const headers = {};
+      const key = getApiKey();
+      if (json) headers['Content-Type'] = 'application/json';
+      if (key) headers.Authorization = `Bearer ${key}`;
+      return headers;
+    }
+
+    function init() {
+      captureApiKeyFromRedirect();
+      $('apiKey').value = getApiKey();
+      updateKeyStatus();
+      bindEvents();
+      updatePromptCounter();
+    }
+
+    function bindEvents() {
+      $('showKeyBtn').addEventListener('click', toggleKeyVisibility);
+      $('saveKeyBtn').addEventListener('click', saveKeyFromInput);
+      $('clearKeyBtn').addEventListener('click', clearSavedKey);
+      $('getKeyBtn').addEventListener('click', requestApiKeyAutomatically);
+      $('model').addEventListener('change', handleModelChange);
+      $('prompt').addEventListener('input', updatePromptCounter);
+      $('buildPromptBtn').addEventListener('click', buildPromptFromForm);
+      $('generateBtn').addEventListener('click', generateImage);
+      $('downloadBtn').addEventListener('click', downloadImage);
+    }
+
+    function requestApiKeyAutomatically() {
+      const redirectUri = window.location.href.split('#')[0];
+      const params = new URLSearchParams({ redirect_uri: redirectUri });
+      if (BYOP_CLIENT_ID) params.set('client_id', BYOP_CLIENT_ID);
+      window.location.href = `${AUTH_BASE}/authorize?${params.toString()}`;
+    }
+
+    function captureApiKeyFromRedirect() {
+      // Pollinations devuelve la clave como fragmento de la URL: #api_key=sk_...
+      // Los fragmentos nunca viajan al servidor, así que la clave no queda en logs.
+      const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
+      if (!hash) return;
+      const fragmentParams = new URLSearchParams(hash);
+      const key = fragmentParams.get('api_key');
+      if (key) {
+        setApiKey(key);
+        updateKeyStatus({ text: '✓ Key recibida automáticamente y guardada en este navegador.', type: 'ok' });
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+      }
+    }
+
+    function toggleKeyVisibility() {
+      const input = $('apiKey');
+      input.type = input.type === 'password' ? 'text' : 'password';
+      $('showKeyBtn').textContent = input.type === 'password' ? '👁️ Ver' : '🙈 Ocultar';
+    }
+
+    function saveKeyFromInput() {
+      const key = $('apiKey').value.trim();
+      setApiKey(key);
+      updateKeyStatus();
+    }
+
+    function clearSavedKey() {
+      $('apiKey').value = '';
+      setApiKey('');
+      updateKeyStatus({ text: 'Key borrada de este navegador.', type: 'ok' });
+    }
+
+    function updateKeyStatus(message) {
+      const key = getApiKey();
+      const status = $('keyStatus');
+      if (message) {
+        status.textContent = message.text;
+        status.className = `status ${message.type}`;
+        return;
+      }
+      if (!key) {
+        status.textContent = 'No configurada. Introduce una API key para generar imágenes.';
+        status.className = 'status bad';
+      } else if (key.startsWith('pk_')) {
+        status.textContent = '✓ Key guardada en este navegador. Bórrala al terminar si el equipo es compartido.';
+        status.className = 'status ok';
+      } else if (key.startsWith('sk_')) {
+        status.textContent = 'Key sk_ guardada en este navegador. Trátala como secreta y bórrala al terminar si el equipo es compartido.';
+        status.className = 'status warn';
+      } else {
+        status.textContent = 'Key guardada en este navegador. Comprueba que sea una key válida de Pollinations.';
+        status.className = 'status warn';
+      }
+    }
+
+    function handleModelChange() {
+      updatePromptCounter();
+    }
+
+    function updatePromptCounter() {
+      const length = $('prompt').value.length;
+      const counter = $('counter');
+      counter.textContent = `${length} caracteres`;
+      counter.className = `counter${length > 2600 ? ' bad' : length > 1800 ? ' warn' : ''}`;
+
+      if (length > 2600) {
+        $('promptHelp').textContent = 'Prompt muy largo. Para mayor estabilidad, reduce detalles o usa un tamaño menor.';
+      } else if ($('model').value === 'flux' && length > 1600) {
+        $('promptHelp').textContent = 'Flux puede ser sensible a prompts largos. ZImage suele ser más estable para este cartel.';
+      } else {
+        $('promptHelp').textContent = 'Prompt dentro de un rango estable para generación.';
+      }
+    }
+
+    function getPromptForRequest() {
+      let prompt = $('prompt').value.trim();
+      if (!prompt) throw new Error('El prompt está vacío.');
+
+      if (prompt.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(prompt);
+          if (typeof parsed.prompt === 'string') prompt = parsed.prompt.trim();
+        } catch (_) {
+          // El usuario puede escribir llaves como parte de un prompt normal.
+        }
+      }
+
+      if (prompt.length > MAX_STABLE_PROMPT_LENGTH) {
+        prompt = prompt.slice(0, MAX_STABLE_PROMPT_LENGTH);
+        const lastStop = Math.max(prompt.lastIndexOf('.'), prompt.lastIndexOf(';'));
+        if (lastStop > 900) prompt = prompt.slice(0, lastStop + 1);
+        prompt += ' Clean coherent composition, no clutter, no watermark, no distorted people.';
+      }
+      return prompt;
+    }
+
+    async function generateImage() {
+      clearError();
+      saveKeyFromInput();
+
+      if (!getApiKey()) {
+        showError('Falta API key. Introduce una key de Pollinations antes de generar.');
+        return;
+      }
+
+      setBusy(true);
+      try {
+        await generateTextImage();
+      } catch (error) {
+        console.error(error);
+        showError(formatErrorForUser(error));
+        $('stateBadge').textContent = 'Error';
+        $('placeholder').style.display = 'block';
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function generateTextImage() {
+      const prompt = getPromptForRequest();
+      const body = {
+        prompt,
+        model: $('model').value,
+        n: 1,
+        size: $('size').value,
+        response_format: 'b64_json',
+        quality: $('quality').value,
+        user: 'carteles-publicitarios-app',
+        image: '',
+        safe: ''
+      };
+
+      const response = await fetch(`${API_BASE}/v1/images/generations`, {
+        method: 'POST',
+        headers: buildHeaders(true),
+        body: JSON.stringify(body)
+      });
+
+      const data = await parseResponse(response);
+      if (!response.ok) throw createHttpError(response.status, data);
+      showGeneratedImage(data);
+    }
+
+    async function parseResponse(response) {
+      const text = await response.text();
+      if (!text) return null;
+      try {
+        return JSON.parse(text);
+      } catch (_) {
+        return text;
+      }
+    }
+
+    function showGeneratedImage(data) {
+      let imageUrl = '';
+      if (data?.data?.[0]?.b64_json) {
+        imageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
+      } else if (data?.data?.[0]?.url) {
+        imageUrl = data.data[0].url;
+      } else if (data?.url) {
+        imageUrl = data.url;
+      } else if (typeof data === 'string' && /^https?:\/\//.test(data)) {
+        imageUrl = data;
+      }
+
+      if (!imageUrl) throw new Error('La respuesta no contiene una imagen reconocible.');
+
+      currentImageUrl = imageUrl;
+      $('generatedImage').src = imageUrl;
+      $('generatedImage').classList.add('active');
+      $('placeholder').style.display = 'none';
+      $('downloadBtn').classList.add('active');
+      $('stateBadge').textContent = '✓ Imagen generada';
+    }
+
+    function createHttpError(status, data) {
+      const error = new Error(extractServerMessage(data) || `HTTP ${status}`);
+      error.status = status;
+      error.data = data;
+      return error;
+    }
+
+    function extractServerMessage(data) {
+      if (!data) return '';
+      if (typeof data === 'string') return data;
+      return data?.error?.message || data?.message || data?.error || JSON.stringify(data);
+    }
+
+    function cleanErrorMessage(error) {
+      const message = error?.message || String(error);
+      return message.length > 360 ? `${message.slice(0, 360)}...` : message;
+    }
+
+    function formatErrorForUser(error) {
+      const status = error.status;
+      const serverMessage = cleanErrorMessage(error);
+
+      if (status === 400) {
+        return `La petición fue rechazada por el proveedor de imagen. Prueba con ZImage, tamaño 768×768 o un prompt más corto.\n\nDetalle: ${serverMessage}`;
+      }
+      if (status === 401) {
+        return 'La API key no es válida o no está autorizada. Revisa la key guardada.';
+      }
+      if (status === 402) {
+        return 'La API key es válida, pero no tiene saldo o presupuesto disponible.';
+      }
+      if (status === 429) {
+        return 'Se ha alcanzado un límite de uso temporal. Inténtalo de nuevo más tarde.';
+      }
+      if (status >= 500) {
+        return `El proveedor de imagen ha devuelto un error temporal.\n\nDetalle: ${serverMessage}`;
+      }
+      return `No se pudo generar la imagen.\n\nDetalle: ${serverMessage}`;
+    }
+
+    function setBusy(isBusy) {
+      $('generateBtn').disabled = isBusy;
+      $('generateBtn').textContent = isBusy ? '⏳ Generando...' : '✨ Generar imagen';
+      $('loading').classList.toggle('active', isBusy);
+      if (isBusy) {
+        $('generatedImage').classList.remove('active');
+        $('downloadBtn').classList.remove('active');
+        $('stateBadge').textContent = 'Generando...';
+      }
+    }
+
+    function showError(message) {
+      $('errorBox').textContent = message;
+      $('errorBox').classList.add('active');
+    }
+
+    function clearError() {
+      $('errorBox').textContent = '';
+      $('errorBox').classList.remove('active');
+    }
+
+    function downloadImage() {
+      if (!currentImageUrl) return;
+      const link = document.createElement('a');
+      link.href = currentImageUrl;
+      link.download = `cartel-publicitario-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
